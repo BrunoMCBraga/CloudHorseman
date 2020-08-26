@@ -1,0 +1,463 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "CloudHorseman Kubernetes Cluster",
+
+  "Parameters" : {
+    "CloudHorsemanEKSRoleName" : {
+      "Type" : "String",
+      "Description" : "CloudHorseman EKS role name",
+      "Default": "CloudHorsemanEKSRole"
+    },
+    "CloudHorsemanEKSNodeInstanceRoleName": {
+      "Type" : "String",
+      "Description" : "CloudHorseman EKS Node role name",
+      "Default": "CloudHorsemanEKSNodeInstanceRole"
+    },
+    "CloudHorsemanEKSNodeGroupName": {
+      "Type" : "String",
+      "Description" : "CloudHorseman EKS Node Group role name",
+      "Default": "cloudhorseman-eks-workers"
+    },
+    "CloudHorsemanECRRepositoryName": {
+      "Type" : "String",
+      "Description" : "CloudHorseman ECR Repository name.",
+      "Default": "cloudhorseman-docker-repo/cloudhorseman-docker"
+    },
+    "CloudHorsemanIAMUsername": {
+      "Type" : "String",
+      "Description" : "IAM Username.",
+      "Default": "user"
+    },
+    "CloudHorsemanEKSClusterName": {
+      "Type" : "String",
+      "Description" : "CloudHorseman EKS Cluster Name.",
+      "Default": "cloudhorseman-eks"
+    }
+
+  },
+
+  "Mappings" : {
+    "SubnetConfig" : {
+      "VPC"     : { "CIDR" : "10.0.0.0/16" },
+      "PublicSubnet1"  : { "CIDR" : "10.0.1.0/24", "AvZone": "us-east-1a" },
+      "PublicSubnet2"  : { "CIDR" : "10.0.2.0/24", "AvZone": "us-east-1b" },
+      "PrivateSubnet1"  : { "CIDR" : "10.0.8.0/24", "AvZone": "us-east-1a" },
+      "PrivateSubnet2"  : { "CIDR" : "10.0.4.0/24", "AvZone": "us-east-1b" }
+    }
+  },
+
+  "Resources" : {
+
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "EnableDnsSupport" : "true",
+        "EnableDnsHostnames" : "true",
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]},
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" }
+        ]
+      }
+    },
+
+    "PublicSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "PublicSubnet1", "CIDR" ]},
+        "AvailabilityZone": { "Fn::FindInMap" : [ "SubnetConfig", "PublicSubnet1", "AvZone" ]},
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "PublicSubnet1" },
+          { "Key" : { "Fn::Join":["",["kubernetes.io/cluster/", {"Ref": "CloudHorsemanEKSClusterName"}]]}, "Value" : "shared"},
+          { "Key" : "kubernetes.io/role/elb", "Value" :  "1"}
+        ]
+      }
+    },
+    "PublicSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "PublicSubnet2", "CIDR" ]},
+        "AvailabilityZone": { "Fn::FindInMap" : [ "SubnetConfig", "PublicSubnet2", "AvZone" ]},
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "PublicSubnet2" },
+          { "Key" : { "Fn::Join":["",["kubernetes.io/cluster/", {"Ref": "CloudHorsemanEKSClusterName"}]]}, "Value" : "shared"},
+          { "Key" : "kubernetes.io/role/elb", "Value" :  "1"}
+        ]
+      }
+    },
+    "PrivateSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "PrivateSubnet1", "CIDR" ]},
+        "AvailabilityZone": { "Fn::FindInMap" : [ "SubnetConfig", "PrivateSubnet1", "AvZone" ]},
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "PrivateSubnet1" },
+          { "Key" : { "Fn::Join":["",["kubernetes.io/cluster/", {"Ref": "CloudHorsemanEKSClusterName"}]]}, "Value" : "shared"},
+          {"Key": "kubernetes.io/role/internal-elb", "Value":  "1"}
+        ]
+      }
+    },
+    "PrivateSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "PrivateSubnet2", "CIDR" ]},
+        "AvailabilityZone": { "Fn::FindInMap" : [ "SubnetConfig", "PrivateSubnet2", "AvZone" ]},
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "PrivateSubnet2" },
+          { "Key" : { "Fn::Join":["",["kubernetes.io/cluster/", {"Ref": "CloudHorsemanEKSClusterName"}]]}, "Value" : "shared"},
+          {"Key": "kubernetes.io/role/internal-elb", "Value":  "1"}
+        ]
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" }
+        ]
+      }
+    },
+
+    "GatewayToInternet" : {
+       "Type" : "AWS::EC2::VPCGatewayAttachment",
+       "DependsOn" : "InternetGateway",
+       "Properties" : {
+         "VpcId" : { "Ref" : "VPC" },
+         "InternetGatewayId" : { "Ref" : "InternetGateway" }
+       }
+    },
+
+    "PublicRouteTable1" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" }
+        ]
+      }
+    },
+
+    "PublicRoute1" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : "GatewayToInternet",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PublicRouteTable1" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation1" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet1" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable1" }
+      }
+    },
+
+    "PublicRouteTable2" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" }
+        ]
+      }
+    },
+    
+    "PublicRoute2" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : "GatewayToInternet",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PublicRouteTable2" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation2" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn" : ["PublicSubnet2", "PublicRouteTable2"],
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet2" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable2" }
+      }
+    },
+
+    "EIP1" : {
+      "DependsOn" : "GatewayToInternet",
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+         "Domain" : "vpc"
+      }
+   },
+   "NAT1" : {
+      "Type" : "AWS::EC2::NatGateway",
+      "Properties" : {
+         "AllocationId" : { "Fn::GetAtt" : ["EIP1", "AllocationId"]},
+         "SubnetId" : { "Ref" : "PublicSubnet1"}
+        }
+   },
+   "PrivateRouteTable1" : {
+         "Type" : "AWS::EC2::RouteTable",
+         "DependsOn" : "VPC",
+         "Properties" : {
+           "VpcId" : { "Ref" : "VPC" },
+           "Tags" : [
+             { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+             { "Key" : "Network", "Value" : "Private" }
+           ]
+         }
+       },
+
+   "PrivateRoute1" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : ["PrivateRouteTable1", "NAT1"],
+      "Properties" : {
+         "RouteTableId" : { "Ref" : "PrivateRouteTable1" },
+         "DestinationCidrBlock" : "0.0.0.0/0",
+         "NatGatewayId" : { "Ref" : "NAT1" }
+      }
+   },
+   
+   
+   "PrivateSubnetRouteTableAssociation1" : {
+         "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+         "DependsOn" : ["PrivateSubnet1", "PrivateRouteTable1"],
+         "Properties" : {
+           "SubnetId" : { "Ref" : "PrivateSubnet1" },
+           "RouteTableId" : { "Ref" : "PrivateRouteTable1" }
+         }
+   },
+
+   "EIP2" : {
+    "DependsOn" : "GatewayToInternet",
+    "Type" : "AWS::EC2::EIP",
+    "Properties" : {
+       "Domain" : "vpc"
+    }
+ },
+
+   "NAT2" : {
+    "Type" : "AWS::EC2::NatGateway",
+    "Properties" : {
+       "AllocationId" : { "Fn::GetAtt" : ["EIP2", "AllocationId"]},
+       "SubnetId" : { "Ref" : "PublicSubnet2"}
+      }
+   },
+
+   "PrivateRouteTable2" : {
+         "Type" : "AWS::EC2::RouteTable",
+         "DependsOn" : "VPC",
+         "Properties" : {
+           "VpcId" : { "Ref" : "VPC" },
+           "Tags" : [
+             { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+             { "Key" : "Network", "Value" : "Private" }
+           ]
+         }
+       },
+  
+   "PrivateRoute2" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : ["PrivateRouteTable2", "NAT2"],
+      "Properties" : {
+         "RouteTableId" : { "Ref" : "PrivateRouteTable2" },
+         "DestinationCidrBlock" : "0.0.0.0/0",
+         "NatGatewayId" : { "Ref" : "NAT2" }
+      }
+   },
+   
+   "PrivateSubnetRouteTableAssociation2" : {
+         "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+         "DependsOn" : ["PrivateSubnet2", "PrivateRouteTable2"],
+         "Properties" : {
+           "SubnetId" : { "Ref" : "PrivateSubnet2" },
+           "RouteTableId" : { "Ref" : "PrivateRouteTable2" }
+         }
+   }, 
+
+   "EKSSecurityGroup" : {
+    "Type" : "AWS::EC2::SecurityGroup",
+    "DependsOn" : ["PrivateSubnetRouteTableAssociation1", "PrivateSubnetRouteTableAssociation2", "PublicSubnetRouteTableAssociation1", "PublicSubnetRouteTableAssociation2"],
+    "Properties" : {
+      "VpcId": { "Ref" : "VPC" },
+      "GroupDescription" : "Enable EKS Ingress/Egress",
+      "SecurityGroupIngress" : [ {
+        "IpProtocol" : "tcp",
+        "FromPort" : "443",
+        "ToPort" : "443",
+        "CidrIp" : "0.0.0.0/0"
+      },
+      {
+        "IpProtocol" : "tcp",
+        "FromPort" : "10250",
+        "ToPort" : "10250",
+        "CidrIp" : "0.0.0.0/0"
+      }],
+      "SecurityGroupEgress" : [ {
+        "IpProtocol" : "tcp",
+        "FromPort" : "0",
+        "ToPort" : "65535",
+        "CidrIp" : "0.0.0.0/0"
+      },
+      {
+        "IpProtocol" : "udp",
+        "FromPort" : "0",
+        "ToPort" : "65535",
+        "CidrIp" : "0.0.0.0/0"
+      },
+      {
+        "IpProtocol" : "icmp",
+        "FromPort" : "-1",
+        "ToPort" : "-1",
+        "CidrIp" : "0.0.0.0/0"
+      }]
+    }
+  },
+
+   "CloudHorsemanEKSCluster": {
+    "Type": "AWS::EKS::Cluster",
+    "DependsOn" : ["EKSSecurityGroup", "PrivateSubnetRouteTableAssociation1", "PrivateSubnetRouteTableAssociation2", "PublicSubnetRouteTableAssociation1", "PublicSubnetRouteTableAssociation2"],
+    "Properties": {
+        "Name": {"Ref": "CloudHorsemanEKSClusterName"},
+        "Version": "1.16",
+        "RoleArn":
+          {
+            "Fn::Join":[
+              "",
+              [
+                "arn:aws:iam::",
+                {
+                  "Ref":"AWS::AccountId"
+                },
+                ":role/",
+                {
+                  "Ref":"CloudHorsemanEKSRoleName"
+                }
+              ]
+            ]
+          }
+        ,
+        "ResourcesVpcConfig": {
+            "SecurityGroupIds": [
+              {"Ref":"EKSSecurityGroup"}
+            ],
+            "SubnetIds": [
+              { "Ref": "PublicSubnet1" },
+              { "Ref": "PublicSubnet2" },
+              { "Ref": "PrivateSubnet1" },
+              { "Ref": "PrivateSubnet2" }  
+            ]
+        }
+    }
+},
+
+"EKSNodegroup": {
+  "Type": "AWS::EKS::Nodegroup",
+  "DependsOn" : ["CloudHorsemanEKSCluster"],
+  "Properties": {
+      "ClusterName": { "Ref": "CloudHorsemanEKSClusterName"},
+      "NodegroupName" : { "Ref": "CloudHorsemanEKSNodeGroupName"},
+      "NodeRole":
+        {
+          "Fn::Join":[
+            "",
+            [
+              "arn:aws:iam::",
+              {
+                "Ref":"AWS::AccountId"
+              },
+              ":role/",
+              {
+                "Ref":"CloudHorsemanEKSNodeInstanceRoleName"
+              }
+            ]
+          ]
+        },
+      "AmiType": "AL2_x86_64",
+      "DiskSize": 10,
+      "ScalingConfig": {
+          "MinSize": 3,
+          "DesiredSize": 5,
+          "MaxSize": 10
+      },
+      "Subnets": [
+        { "Ref": "PrivateSubnet1" },
+        { "Ref": "PrivateSubnet2" }
+      ]
+  }
+},
+
+  "CloudHorsemanECRRepository":{
+    "Type":"AWS::ECR::Repository",
+    "Properties":{
+      "RepositoryName":{ "Ref": "CloudHorsemanECRRepositoryName" },
+      "RepositoryPolicyText":{
+        "Version":"2008-10-17",
+        "Statement":[
+          {
+            "Effect":"Allow",
+            "Principal":{
+              "AWS":[
+                {
+                  "Fn::Join":[
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref":"AWS::AccountId"
+                      },
+                      ":user/",
+                      {
+                        "Ref":"CloudHorsemanIAMUsername"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            "Action":[
+              "ecr:GetDownloadUrlForLayer",
+              "ecr:BatchGetImage",
+              "ecr:ListImages",
+              "ecr:BatchCheckLayerAvailability",
+              "ecr:PutImage",
+              "ecr:InitiateLayerUpload",
+              "ecr:UploadLayerPart",
+              "ecr:CompleteLayerUpload"
+            ]
+          }
+        ]
+      }
+    }
+  }
+
+   
+
+},
+
+  "Outputs" : {
+  
+  }
+}

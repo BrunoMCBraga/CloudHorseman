@@ -1,0 +1,5 @@
+{
+    "ECRREPONAME": "cloudhorseman-docker-repo/cloudhorseman-docker",
+    "STACKNAME": "cloudhorseman-cf",
+    "S3BUCKETNAME": "cloudhorseman-cloudhorseman-cf"
+}

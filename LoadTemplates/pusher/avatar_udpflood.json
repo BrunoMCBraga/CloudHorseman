@@ -1,0 +1,8 @@
+{
+    "REPLICAS": 10,
+    "REMOTEINPUT": "/usr/share/cloudhorseman/hosts.txt",
+    "LOCALINPUT": "/Users/brubraga/go/src/github.com/BrunoMCBraga/CloudHorseman/DockerTemplates/udpflood/hosts.txt",
+    "DEPLOYMENTNAME": "cloudhorseman-dep-udpflood",
+    "WORKLOADSPLIT": "DUPLICATEINPUT"
+
+}

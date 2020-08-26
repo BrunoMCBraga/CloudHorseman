@@ -1,0 +1,14 @@
+{
+    "STACKNAME": "cloudhorseman-cf",
+    "ECRREPONAME": "cloudhorseman-docker-repo/cloudhorseman-docker",
+    "DOCKERFILEFOLDER": "/Users/brubraga/go/src/github.com/BrunoMCBraga/CloudHorseman/DockerTemplates/udpflood",
+    "REPLICAS": 10,
+    "DELETEIMAGESAFTERPUSH": true,
+    "REMOTEOUTPUT": "/usr/share/cloudhorseman/output.txt",
+    "LOCALOUTPUT": "/Users/brubraga/Downloads/",
+    "REMOTEINPUT": "/usr/share/cloudhorseman/hosts.txt",
+    "LOCALINPUT": "/Users/brubraga/go/src/github.com/BrunoMCBraga/CloudHorseman/DockerTemplates/udpflood/hosts.txt",
+    "DEPLOYMENTNAME": "cloudhorseman-dep-udpflood",
+    "REMOTESTOP": "/usr/share/cloudhorseman/stop.txt",
+    "WORKLOADSPLIT": "MULTIPLYINPUT"
+}

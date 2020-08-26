@@ -1,0 +1,12 @@
+{
+    "STACKNAME": "cloudhorseman-cf",
+    "ECRREPONAME": "cloudhorseman-docker-repo/cloudhorseman-docker",
+    "DOCKERFILEFOLDER": "/Users/brubraga/go/src/github.com/BrunoMCBraga/CloudHorseman/DockerTemplates/sshproxy",
+    "REPLICAS": 1,
+    "EXPOSEDPORTPROTOCOL": "TCP",
+    "EXPOSEDPORT": 22,
+    "DELETEIMAGESAFTERPUSH": true,
+    "LOCALOUTPUT": "/Users/brubraga/Downloads/",
+    "DEPLOYMENTNAME": "cloudhorseman-dep-sshproxy",
+    "REMOTESTOP": "/usr/share/cloudhorseman/stop.txt"
+}

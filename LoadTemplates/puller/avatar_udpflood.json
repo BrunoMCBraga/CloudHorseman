@@ -1,0 +1,8 @@
+{
+    "REPLICAS": 3,
+    "REMOTEFILE": "/usr/share/cloudhorseman/stop.txt",
+    "LOCALFILE": "/Users/brubraga/go/src/github.com/BrunoMCBraga/CloudHorseman/DockerTemplates/udpflood/stop.txt",
+    "DEPLOYMENTNAME": "cloudhorseman-dep-udpflood",
+    "WORKLOADSPLIT": "DUPLICATEINPUT"
+
+}        

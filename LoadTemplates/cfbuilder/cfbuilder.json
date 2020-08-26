@@ -1,0 +1,6 @@
+{
+    "TEMPLATE": "/Users/brubraga/go/src/github.com/BrunoMCBraga/CloudHorseman/CloudFormationFiles/cloudformation_cluster.json",
+    "ECRREPONAME": "cloudhorseman-docker-repo/cloudhorseman-docker",
+    "STACKNAME": "cloudhorseman-cf",
+    "EKSCLUSTERNAME": "cloudhorseman-eks"
+}
