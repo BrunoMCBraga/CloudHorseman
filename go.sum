@@ -1,6 +1,8 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BrunoMCBraga/HayMakerCF v0.0.0-20200826142426-a20a9a1f9ceb h1:jc5OFWLZzLsNdJFCMuLqih+qOhsqmYdxYeLo0mmPEgc=
 github.com/BrunoMCBraga/HayMakerCF v0.0.0-20200826142426-a20a9a1f9ceb/go.mod h1:AisHdpfIrwdVsG775w69lRDQWpN3yboehYVY9S4QbsI=
+github.com/BrunoMCBraga/HayMakerCF v0.0.0-20200826145249-7ac5eda80014 h1:hKkle6xT1XVRd0B9JF7fh0T/2+5PFEx3j1T/A8SfGhY=
+github.com/BrunoMCBraga/HayMakerCF v0.0.0-20200826145249-7ac5eda80014/go.mod h1:AisHdpfIrwdVsG775w69lRDQWpN3yboehYVY9S4QbsI=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
 github.com/aws/aws-sdk-go v1.34.10 h1:VU78gcf/3wA4HNEDCHidK738l7K0Bals4SJnfnvXOtY=
 github.com/aws/aws-sdk-go v1.34.10/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
