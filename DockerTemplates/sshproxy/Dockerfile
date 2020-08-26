@@ -17,4 +17,5 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 EXPOSE 22
 ENTRYPOINT ["/usr/share/cloudhorseman/exec.sh"]
 
+#Run kubectl get services to get the External IP (actually a domain) and then use that as @domain below
 #Locally: ssh -D 12345 -C -q -N cloudhorseman@acfc42d54981644a1bfd5d7496ce705c-1453548692.us-east-1.elb.amazonaws.com
