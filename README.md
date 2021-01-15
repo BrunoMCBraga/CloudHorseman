@@ -69,4 +69,4 @@ You can inspect the list of modules in the main menu by typing **show**. Current
 - Since I could not get the file copy code using Kubernetes to work (i.e. compilation issues, not a lot of code available online) I am making calls to kubectl through Cloud Horseman
 
 ## Found this useful? Help me buy a new Ozone Layer to save the endangered polar bears:
-https://www.paypal.com/donate?hosted_button_id=ATZQDP4AWECPL
+https://www.paypal.com/donate/?hosted_button_id=UDFXULV3WV5GL
